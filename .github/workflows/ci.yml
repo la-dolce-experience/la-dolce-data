@@ -1,0 +1,83 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  seed:
+    name: Seed aplicado sobre as migrations da API
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: la-dolce-api
+    steps:
+      - name: Token de leitura dos repositórios la-dolce-*
+        working-directory: .
+        env:
+          TOKEN: ${{ secrets.LA_DOLCE_REPOS_TOKEN }}
+        run: |
+          if [ -z "$TOKEN" ]; then
+            echo "::error::Crie o secret LA_DOLCE_REPOS_TOKEN na organização (veja o README do la-dolce-api)."
+            exit 1
+          fi
+      - uses: actions/checkout@v5
+        with:
+          path: la-dolce-data
+      - name: Migrations (la-dolce-api)
+        uses: actions/checkout@v5
+        with:
+          repository: ${{ github.repository_owner }}/la-dolce-api
+          token: ${{ secrets.LA_DOLCE_REPOS_TOKEN }}
+          path: la-dolce-api
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: la-dolce-data/.nvmrc
+          cache: npm
+          cache-dependency-path: la-dolce-api/package-lock.json
+      - run: npm ci
+      - name: Supabase local (migrations + este seed)
+        run: npx supabase start -x studio,realtime,edge-runtime,logflare,vector,supavisor,postgres-meta
+      - name: Variáveis do Supabase local
+        run: |
+          eval "$(npx supabase status -o env)"
+          echo "::add-mask::$SERVICE_ROLE_KEY"
+          {
+            echo "SUPABASE_URL=$API_URL"
+            echo "SUPABASE_ANON_KEY=$ANON_KEY"
+            echo "SUPABASE_SERVICE_ROLE_KEY=$SERVICE_ROLE_KEY"
+          } > .env.local
+      - name: Testes da API com este conteúdo
+        run: npm run test:integration
+      - if: always()
+        run: npx supabase stop --no-backup
+
+  segredos:
+    name: Segredos
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0 # histórico completo: um segredo apagado depois continua exposto nos commits antigos
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+      - name: Gitleaks (todo o histórico)
+        env:
+          GITLEAKS_VERSION: 8.21.2
+        run: |
+          curl -sSfL "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz" | tar -xz -C /tmp gitleaks
+          /tmp/gitleaks git . --redact --verbose
+      - name: Arquivos .env e chaves versionados
+        run: node scripts/check-secrets.mjs
