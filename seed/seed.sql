@@ -76,4 +76,9 @@ insert into public.gallery_items (media_id, alt, position) values
   ('00000000-0000-4000-a000-000000000002', 'Sorvete no copinho La Dolce Soft', 1),
   ('00000000-0000-4000-a000-000000000003', 'Casquinha de sorvete soft La Dolce', 2);
 
+-- Apresentações citadas no site original ("do copinho à casquinha"). Os sabores dependem do cliente.
+insert into public.flavor_items (kind, title, media_id, alt, position) values
+  ('apresentacao', 'Copinho', '00000000-0000-4000-a000-000000000002', 'Sorvete La Dolce servido em copinho rosa com toppings coloridos', 0),
+  ('apresentacao', 'Casquinha', '00000000-0000-4000-a000-000000000003', 'Casquinha de sorvete soft de morango', 1);
+
 -- Etapas, FAQ e depoimentos começam vazios: dependem de informações do cliente.
