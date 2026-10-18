@@ -11,8 +11,8 @@ insert into public.media (id, src_lg, src_sm, width_lg, height_lg, width_sm, hei
    1066, 1600, 533, 800, 'Sorvete La Dolce servido em copinho rosa com toppings coloridos', 'copinho-la-dolce-soft.jpg'),
   ('00000000-0000-4000-a000-000000000003', '/images/casquinha-morango-1600.webp', '/images/casquinha-morango-800.webp',
    594, 1600, 297, 800, 'Casquinha de sorvete soft de morango', 'casquinha-morango.png'),
-  ('00000000-0000-4000-a000-000000000004', '/images/logo.webp', '/images/logo.webp',
-   480, 303, 480, 303, 'La Dolce Experience', 'logo.png'),
+  ('00000000-0000-4000-a000-000000000004', '/images/logo.webp', '/images/logo-280.webp',
+   480, 303, 280, 177, 'La Dolce Experience', 'logo.png'),
   ('00000000-0000-4000-a000-000000000005', '/images/og-la-dolce.jpg', '/images/og-la-dolce.jpg',
    1200, 630, 1200, 630, 'Estação La Dolce Experience', 'og-la-dolce.jpg');
 
